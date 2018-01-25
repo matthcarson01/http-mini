@@ -14,7 +14,8 @@ class App extends Component {
 
     this.state = {
       vehiclesToDisplay: [],
-      buyersToDisplay: []
+      buyersToDisplay: [],
+      baseUrl: 'https://joes-autos.herokuapp.com'
     }
 
     this.getVehicles = this.getVehicles.bind(this);
@@ -27,38 +28,46 @@ class App extends Component {
     this.nameSearch = this.nameSearch.bind(this);
     this.resetData = this.resetData.bind(this);
     this.byYear = this.byYear.bind(this);
+    this.updatePrice = this.updatePrice.bind(this);
   }
 
   getVehicles() {
-    // axios (GET)
-    // setState with response -> vehiclesToDisplay
+    axios.get(`${this.state.baseUrl}/api/vehicles`).then(response => {
+      this.setState({ vehiclesToDisplay: response.data });
+    }).catch(console.log);
   }
 
   getPotentialBuyers() {
-    // axios (GET)
-    // setState with response -> buyersToDisplay
+    axios.get(`${this.state.baseUrl}/api/buyers`).then(response=>{
+      this.setState({ buyersToDisplay:response.data});
+    }).catch(console.log);
   }
 
   sellCar(id) {
-    // axios (DELETE)
-    // setState with response -> vehiclesToDisplay
+    axios.delete(`${this.state.baseUrl}/api/vehicles/${id}`).then(response=>{
+      this.setState({vehiclesToDisplay: response.data.vehicles});
+    }).catch(console.log);
   }
 
   filterByMake() {
-    let make = this.refs.selectedMake.value
-    // axios (GET)
-    // setState with response -> vehiclesToDisplay
+    let make = this.refs.selectedMake.value;
+    axios.get(`${this.state.baseUrl}/api/vehicles?make=${make}`).then(response => { 
+      this.setState({ vehiclesToDisplay: response.data });
+    }).catch(console.log);
   }
 
   filterByColor() {
     let color = this.refs.selectedColor.value;
-    // axios (GET)
-    // setState with response -> vehiclesToDisplay
+    axios.get(`${this.state.baseUrl}/api/vehicles?color=${color}`).then(response => {
+      this.setState({ vehiclesToDisplay: response.data });
+    }).catch(console.log);
   }
 
-  updatePrice(priceChange) {
-    // axios (PUT)
-    // setState with response -> vehiclesToDisplay
+  updatePrice(priceChange,v) {
+    const {id} = v;
+    axios.put(`${this.state.baseUrl}/api/vehicles/${id}/${priceChange}`).then(response =>{
+      this.setState({vehiclesToDisplay:response.data.vehicles});
+    }).catch(console.log);
   }
 
   addCar(){
@@ -69,8 +78,9 @@ class App extends Component {
     year: this.refs.year.value,
     price: this.refs.price.value
   }  
-  // axios (POST)
-  // setState with response -> vehiclesToDisplay
+  axios.post(`${this.state.baseUrl}/api/vehicles`,newCar).then(response => {
+    this.setState({vehiclesToDisplay:response.data.vehicles})
+  }).catch(console.log);
 }
 
 addBuyer() {
@@ -81,18 +91,28 @@ addBuyer() {
   }
   //axios (POST)
   // setState with response -> buyersToDisplay
+  axios.post(`${this.state.baseUrl}/api/buyers`,newBuyer)
+  .then(response => {this.setState({buyersToDisplay:response.data.buyers})})
+  .catch(console.log);
 }
 
 nameSearch() {
   // axios (GET)
   // setState with response -> buyersToDisplay
   let searchLetters = this.refs.searchLetters.value;
+  axios.get(`${this.state.baseUrl}/api/buyers/?name=${searchLetters}`)
+  .then(response => {this.setState({ buyersToDisplay: response.data })})
+  .catch(console.log);
+
 }
 
 byYear() {
   let year = this.refs.searchYear.value;
   // axios (GET)
   // setState with response -> vehiclesToDisplay
+  axios.get(`${this.state.baseUrl}/api/vehicles/?year=${year}`)
+  .then(response => {this.setState({vehiclesToDisplay: response.data})})
+  .catch(console.log);
 }
 
 // ==============================================
@@ -126,11 +146,11 @@ resetData(dataToReset) {
           <p>Price: { v.price }</p>
           <button
             className='btn btn-sp'
-            onClick={ () => this.updatePrice('up') }
+            onClick={ () => this.updatePrice('up',v) }
             >Increase Price</button>
           <button
             className='btn btn-sp'
-            onClick={ () => this.updatePrice('down') }
+            onClick={ () => this.updatePrice('down',v) }
             >Decrease Price</button>  
           <button 
             className='btn btn-sp'
